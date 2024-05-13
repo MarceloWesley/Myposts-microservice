@@ -34754,25 +34754,25 @@ var Mailer = class {
     };
     this.transporter = nodemailer.createTransport(this.smtpConfig);
   }
-  async sendEmail(recipient, code) {
+  async sendEmail(user) {
     const html = `
     <div>
     <h3>Ol\xE1!, Recebemos sua solicita\xE7\xE3o para recuperar a senha no Myposts</h3>
     <br/>
-    <p>Aqui est\xE1 o c\xF3digo de recupera\xE7\xE3o: <b>${code}</b></p>
+    <p>Aqui est\xE1 o c\xF3digo de recupera\xE7\xE3o: <b>${user.code}</b></p>
     <br/>
     <p>Atenciosamente Equipe de suporte do Mypost</p>
     </div>
     `;
     return this.transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: recipient,
+      to: user.email,
       subject: "Myposts-Support: Password Recovery",
       text: `Ol\xE1!
 
 Recebemos sua solicita\xE7\xE3o para recuperar a senha no Myposts-Support.
 
-Aqui est\xE1 o c\xF3digo de recupera\xE7\xE3o: ${code}
+Aqui est\xE1 o c\xF3digo de recupera\xE7\xE3o: ${user.code}
 
 Por favor, use este c\xF3digo para redefinir sua senha.
 
@@ -34783,27 +34783,15 @@ Equipe de Suporte do Myposts`,
   }
 };
 
-// src/utils/generate-code.ts
-function generateCode(quantity) {
-  const char = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < quantity; i++) {
-    const index = Math.floor(Math.random() * char.length);
-    result += char[index];
-  }
-  return result;
-}
-
 // src/index.ts
 var app = (0, import_express.default)();
 app.use(import_express.default.json());
 app.use((0, import_cors.default)({ origin: "*" }));
 var email = new Mailer();
 app.post("/reset-password/", async (req, res) => {
-  const param = req.query.email;
-  const code = generateCode(6);
+  const body = { email: req.body.email, code: req.body.code };
   try {
-    const response = await email.sendEmail(param, code);
+    const response = await email.sendEmail(body);
     return res.json({ response }).status(200);
   } catch (error) {
     res.status(500).send({ error });

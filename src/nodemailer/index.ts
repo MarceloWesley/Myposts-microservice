@@ -7,6 +7,11 @@ type SmtpConfigProps = {
   secure: boolean;
   auth: { user: string; pass: string };
 };
+
+type UserProps = {
+  email: string;
+  code: number;
+};
 export class Mailer {
   smtpConfig: SmtpConfigProps;
   transporter: nodemailer.Transporter;
@@ -24,21 +29,21 @@ export class Mailer {
     this.transporter = nodemailer.createTransport(this.smtpConfig);
   }
 
-  async sendEmail(recipient: string, code: string) {
+  async sendEmail(user: UserProps) {
     const html = `
     <div>
     <h3>Olá!, Recebemos sua solicitação para recuperar a senha no Myposts</h3>
     <br/>
-    <p>Aqui está o código de recuperação: <b>${code}</b></p>
+    <p>Aqui está o código de recuperação: <b>${user.code}</b></p>
     <br/>
     <p>Atenciosamente Equipe de suporte do Mypost</p>
     </div>
     `;
     return this.transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: recipient,
+      to: user.email,
       subject: "Myposts-Support: Password Recovery",
-      text: `Olá!\n\nRecebemos sua solicitação para recuperar a senha no Myposts-Support.\n\nAqui está o código de recuperação: ${code}\n\nPor favor, use este código para redefinir sua senha.\n\nAtenciosamente,\nEquipe de Suporte do Myposts`,
+      text: `Olá!\n\nRecebemos sua solicitação para recuperar a senha no Myposts-Support.\n\nAqui está o código de recuperação: ${user.code}\n\nPor favor, use este código para redefinir sua senha.\n\nAtenciosamente,\nEquipe de Suporte do Myposts`,
       html,
     });
   }
