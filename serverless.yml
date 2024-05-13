@@ -1,0 +1,32 @@
+org: olyscott
+app: myposts-microservices
+service: myposts-microservices
+frameworkVersion: '3'
+
+plugins:
+  - serverless-esbuild
+  - serverless-typescript 
+  - serverless-offline
+
+
+custom: 
+  esbuild:
+    bundle: true
+    minify: false
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  lambdaHashingVersion: '20201221' 
+  logRetentionInDays: 7
+  region: 'us-east-1'
+
+
+functions:
+  api:
+    handler: src/index.handler
+    timeout: 15
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: post
